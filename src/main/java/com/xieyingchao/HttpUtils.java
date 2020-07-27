@@ -81,6 +81,12 @@ public class HttpUtils {
         }
         httpPost.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(10 * 1000)
+                .setSocketTimeout(10 * 1000)
+                .setConnectionRequestTimeout(10 * 1000).build();
+        httpPost.setConfig(requestConfig);
+
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(form, StandardCharsets.UTF_8);
         httpPost.setEntity(entity);
 

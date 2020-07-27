@@ -2,8 +2,6 @@ package com.xieyingchao;
 
 import org.junit.Test;
 
-import java.io.File;
-import java.net.URLEncoder;
 
 import static org.junit.Assert.assertTrue;
 
@@ -20,5 +18,5 @@ public class AppTest
     {
         assertTrue( true );
     }
-    
+
 }

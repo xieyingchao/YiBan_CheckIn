@@ -36,7 +36,7 @@ public class App
         httpUtils = new HttpUtils();
 
         String path = "PersonInfo.properties";
-        System.out.println(path);
+        //System.out.println(path);
         if (args.length != 0) path = args[0];
         try {
             properties = new PropertiesUtils(path);
@@ -60,6 +60,11 @@ public class App
         httpUtils.close();
     }
 
+    /**
+     * 使用记录自动登陆
+     * @return 登陆结果
+     * @throws Exception
+     */
     public static String autoLogin() throws Exception {
         access_token = properties.getValue("access_token");
 
@@ -78,6 +83,11 @@ public class App
         }
     }
 
+    /**
+     * 使用账号密码登陆，获取access_token通行证
+     * @return 登陆结果
+     * @throws Exception
+     */
     public static String login() throws Exception {
         String account = properties.getValue("account");
         String password = properties.getValue("password");
@@ -107,6 +117,10 @@ public class App
         return getVerifyRequest(access_token);
     }
 
+    /**
+     * 前往首页
+     * @throws Exception
+     */
     public static void goIndex() throws Exception {
 
         String url = "https://mobile.yiban.cn/api/v3/home";
@@ -124,6 +138,12 @@ public class App
         System.out.println("   url：" + localSchoolUrl + "\n==============================");
     }
 
+    /**
+     * 获取VerifyRequest，用于二次认证
+     * @param access_token 通行证
+     * @return 获取结果
+     * @throws Exception
+     */
     public static String getVerifyRequest(String access_token) throws Exception {
         String url = "http://f.yiban.cn/iapp/index";
 
@@ -145,6 +165,12 @@ public class App
         return secondAuth(verify_request);
     }
 
+    /**
+     * 二次认证，获取下发的cookie
+     * @param verify_request 之前获取的认证码
+     * @return 认证结果
+     * @throws Exception
+     */
     public static String secondAuth(String verify_request) throws Exception{
         String url = "https://api.uyiban.com/base/c/auth/yiban";
 
@@ -165,6 +191,11 @@ public class App
         return getTaskId();
     }
 
+    /**
+     * 获取健康打卡的任务id
+     * @return 获取结果
+     * @throws Exception
+     */
     public static String getTaskId() throws Exception {
         String url = "https://api.uyiban.com/officeTask/client/index/uncompletedList";
 
@@ -184,6 +215,12 @@ public class App
         return getWFId(taskId);
     }
 
+    /**
+     * 获取表单id，表单id能判断表单内容是否变化，获取表单发布机构
+     * @param TaskId 之前的任务id
+     * @return 返回获取的结果
+     * @throws Exception
+     */
     public static String getWFId(String TaskId) throws Exception {
         String url = "https://api.uyiban.com/officeTask/client/index/detail";
 
@@ -209,6 +246,12 @@ public class App
         return submitForm(extend);
     }
 
+    /**
+     * 提交表单，获取结果的initiateId
+     * @param extend 获取到的表单发布机构
+     * @return 返回获取到的结果
+     * @throws Exception
+     */
     public static String submitForm(String extend) throws Exception{
         String url = "https://api.uyiban.com/workFlow/c/my/apply/" + WFId + "?CSRF=" + CSRF;
 
@@ -222,29 +265,46 @@ public class App
         if(statusCode != 0){
             System.out.println("==================== 表单提交失败 ====================");
             return "表单提交失败";
+        }else{
+            System.out.println("==================== 表单提交成功 ====================");
+            String initiateId = jsonObject.getString("data");
+            System.out.println("   InitiateId: " + initiateId);
+            System.out.println("=====================================================");
+            return getShareLink(initiateId);
         }
-        String initiateId = jsonObject.getString("data");
-
-        return getShareLink(initiateId);
     }
 
-    public static String getShareLink(String InitiateId) throws Exception {
+    /**
+     * 根据initiateId，获取表单的分享链接
+     * @param initiateId 表单结果
+     * @return 返回获取到的联机
+     * @throws Exception
+     */
+    public static String getShareLink(String initiateId) throws Exception {
         String url = "https://api.uyiban.com/workFlow/c/work/share";
 
-        String params = "InitiateId=" + InitiateId;
+        String params = "InitiateId=" + initiateId + "&CSRF=" + CSRF;
 
         JSONObject jsonObject = httpUtils.get_JsonObject(url, params, headers, false);
+        int statusCode = jsonObject.getInteger("code");
         shareLink = jsonObject.getJSONObject("data").getString("uri");
-        if(shareLink.equals("")){
+        if(statusCode != 0){
             System.out.println("================== shareLink获取失败 =================");
             return "shareLink获取失败";
+        }else{
+            System.out.println("================== shareLink获取成功 =================\n" + "  shareLinke: " + shareLink);
+            System.out.println("=====================================================");
+            return shareLink;
         }
-        System.out.println("================== shareLink获取成功 =================\n" + "  shareLinke: " + shareLink);
-        System.out.println("=====================================================");
-        return shareLink;
     }
 
-    private static void push2WeChat(String result, Boolean isLink) throws Exception {
+    /**
+     * 利用server酱将结果发送到微信
+     * @param result 要发送的内容
+     * @param isLink 是否为链接
+     * @throws Exception
+     */
+    public static void push2WeChat(String result, Boolean isLink) throws Exception {
         String SCKEY = properties.getValue("SCKEY");
 
         String url = "https://sc.ftqq.com/" + SCKEY + ".send";
@@ -252,7 +312,7 @@ public class App
 
         if (isLink){
             String linkMD = "[打卡成功分享链接](" + result + ")";
-            params +=linkMD;
+            params += linkMD;
         }else{
             params += result;
         }
