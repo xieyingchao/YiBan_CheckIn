@@ -308,15 +308,16 @@ public class App
         String SCKEY = properties.getValue("SCKEY");
 
         String url = "https://sc.ftqq.com/" + SCKEY + ".send";
-        String params = "text=易班健康打卡结果&desp=";
+        List<BasicNameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("text", "易班健康打卡结果"));
 
         if (isLink){
             String linkMD = "[打卡成功分享链接](" + result + ")";
-            params += linkMD;
+            params.add(new BasicNameValuePair("desp", linkMD));
         }else{
-            params += result;
+            params.add(new BasicNameValuePair("desp", result));
         }
-        JSONObject jsonObject = httpUtils.get_JsonObject(url, params, headers, false);
+        JSONObject jsonObject = httpUtils.post_JsonObject(url, params, headers);
         int statusCode = jsonObject.getInteger("errno");
         String errmsg = jsonObject.getString("errmsg");
         if(statusCode != 0){
