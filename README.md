@@ -17,13 +17,13 @@
 3. 执行命令 **java -jar jar包路径**
 
 ```shell
-java -jar yiban-1.0-RELEASE-jar-with-dependencies #jar包路径
+java -jar yiban-1.0-RELEASE-jar-with-dependencies.zip #jar包路径
 ```
 
 4. 或者你也可以不用将***PersonInfo.properties***放在同个目录下，但是需要指出jar包和配置文件的路径
 
 ```shell
-java -jar yiban-1.0-RELEASE-jar-with-dependencies D:\java\idea\yiban\PersonInfo.properties
+java -jar yiban-1.0-RELEASE-jar-with-dependencies D:\java\idea\yiban\PersonInfo.properties.zip
 ```
 
 
